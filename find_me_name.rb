@@ -1,6 +1,5 @@
 require 'enumerator'
 require 'csv'
-require 'pry'
 require 'whois'
 require_relative 'top_level_domain_names'
 
@@ -9,7 +8,7 @@ class FindMeName
 
   TOP_LEVEL = ALL_DOMAINS
   def do_work(top_level_domain_name, first_twenty = nil)
-    inputs = (0...36).map{ |i| i.to_s 36}
+    inputs = (10...36).map{ |i| i.to_s 36}
 
     names = inputs.repeated_combination(2).to_a  #=> [[aaa], [aab], [aac]]
 
@@ -18,21 +17,24 @@ class FindMeName
     names.each do |name|
       begin
         r = client.lookup("#{name.join}.#{top_level_domain_name}")
-        sleep(5)
+        sleep(3)
         write_data([r]) if r.available?
       rescue => e
         puts ("DERP-#{name.join}.#{top_level_domain_name}")
+	sleep(3)
       end
     end
   end
 
   def do_mad_work
-    TOP_LEVEL.each_slice(3) do |domains|
+    TOP_LEVEL.each_slice(10) do |domains|
       threads = []
       domains.each do |domain|
         threads << Thread.new { do_work(domain) }
       end
-      threads.each { |thr| thr.join }
+	puts "slices in progresS"
+       threads.each { |thr| thr.join }
+	puts "finished"
     end
   end
 
